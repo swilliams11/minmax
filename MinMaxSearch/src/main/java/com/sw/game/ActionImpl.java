@@ -16,5 +16,6 @@ public class ActionImpl implements Action {
 
 	public String action(){
 		return Integer.toString(move1) + " " + Integer.toString(move2);
+		
 	}
 }
