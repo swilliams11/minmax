@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -48,10 +49,7 @@ public class Run {
 		//System.out.println("1 - easy problem\n2 - medium problem\n3 - hard problem\n4 - enter new problem");
 		String response = in.nextLine();
 		init = readFile(response);
-		player = determinePlayer();
-		//init.add("0 1");
-		//init.add("1 2");
-		
+		player = determinePlayer();		
 		//create a new DanceBattle with 3 moves and 2 moves taken
 		Puzzle p = new DanceBattle(Run.numOfMoves, Run.numOfMovesTaken, player, init);
 		
@@ -59,8 +57,30 @@ public class Run {
 		//init.add("1 1");
 		//Puzzle p = new DanceBattle(2, 2, Player.MIN, init);
 		Node<Puzzle> n = new Node<>(p);
-		//Node<Puzzle> n = new Node<>(p, null, null, 1.0);
-		Search<Puzzle> search = new MinMaxSearch();
+		Comparator<Node> maxCmp = new Comparator<Node>(){
+			@Override
+			public int compare(Node o1, Node o2) {
+				return (int)(o1.getHueristic() - o2.getHueristic());
+			}			
+		};
+		
+		Comparator<Node> minCmp = new Comparator<Node>(){
+			@Override
+			public int compare(Node o1, Node o2) {
+				return (int)(o2.getHueristic() - o1.getHueristic());
+			}			
+		};
+		
+		//default ply of 2
+		//Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp);
+		
+		//default ply of 2
+		Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp,4);
+				
+		//fails to finish running
+		//Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp, -1);
+		
+		
 		Node<Puzzle> node = search.search(n);
 		Puzzle finalState = node.getState();
 		List<Action> danceSequence = finalState.moveSequence();
