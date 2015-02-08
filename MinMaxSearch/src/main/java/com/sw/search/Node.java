@@ -36,6 +36,8 @@ public class Node<T> {
 
 	// n.PARENT: the node in the search tree that generated this node;
 	private Node<T> parent;
+	
+	private Node<T> child;
 
 	// n.ACTION: the action that was applied to the parent to generate the node;
 	private Action action;
@@ -85,6 +87,7 @@ public class Node<T> {
 		this.action = action;
 		this.pathCost = parent.pathCost + stepCost;
 		this.depth = parent.depth + 1;
+		parent.child = this;
 	}
 	
 	/**
@@ -103,6 +106,15 @@ public class Node<T> {
 	 */
 	public Node<T> getParent() {
 		return parent;
+	}
+	
+	/**
+	 * Returns this node's child node, from which this node was generated.
+	 * 
+	 * @return the node's child node, from which this node was generated.
+	 */
+	public Node<T> getChild() {
+		return child;
 	}
 
 	/**
@@ -150,6 +162,18 @@ public class Node<T> {
 		path.add(0, current);
 		return path;
 	}
+	
+	/*public List<Action> getMoveSequence(){
+		//List<Action> path = new ArrayList<>();
+		Node current = this;
+		while (current != null) {
+			//path.add();
+			current = current.getParent();
+		}
+		// ensure the root node is added
+		path.add(0, current);
+		return path;
+	}*/
 
 	@Override
 	public String toString() {

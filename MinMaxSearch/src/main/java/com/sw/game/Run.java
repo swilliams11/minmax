@@ -1,37 +1,33 @@
 package com.sw.game;
 
 
-import java.util.Comparator;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
 import org.apache.log4j.Logger;
+
 import aima.core.search.framework.Metrics;
+
 import com.sw.game.Puzzle;
+import com.sw.search.MinMaxSearch;
 import com.sw.search.Node;
 import com.sw.search.Search;
-import com.sw.search.framework.ActionFunctionImpl;
-import com.sw.search.framework.GoalTest;
-import com.sw.search.framework.HeuristicManhattanDistance;
-import com.sw.search.framework.HeuristicTilesCorrect;
-import com.sw.search.framework.Problem;
-import com.sw.search.framework.ResultFunctionImpl;
 
 public class Run {
 	static Metrics metrics;
-	static Logger log = Logger.getLogger("Log"); 
-	static Puzzle puzzle = new EightPuzzle("1,2,3,4,0,5,6,7,8");
-	static Puzzle puzzle2 = new EightPuzzle("1,2,0,3,4,5,6,7,8");
-	static Puzzle easy = new EightPuzzle("1,3,4,8,6,2,7,0,5");// prof. easy
-	static Puzzle medium = new EightPuzzle("2,8,1,0,4,3,7,6,5");
-	static Puzzle hard = new EightPuzzle("5,6,7,4,0,8,3,2,1");
-	static GoalTest<Puzzle> goal = new EightPuzzle("1,2,3,4,5,6,7,8,0");
-	static GoalTest<Puzzle> goal2 = new EightPuzzle("1,2,3,8,0,4,7,6,5");// prof.														// goal
+	static Logger log = Logger.getLogger("Log");
 	static List<Node> solution = null;
-	static final String EASY = "Easy";
-	static final String MEDIUM = "Medium";
-	static final String HARD = "Hard";
-	static final String CUSTOM = "Custom";
-	
+	static List<String> init = new ArrayList<>();
+	static int numOfMoves;
+	static int numOfMovesTaken;
+	static Player player;
 	
 	public static void main(String[] args) throws Exception {
 		boolean result = true;
@@ -40,72 +36,113 @@ public class Run {
 		}
 	}
 	
+	
+	/*
+	 * Run run the process.
+	 * 
+	 * @return true if user wants to examine another game or false otherwise.
+	 */
 	public static boolean run(){
 		Scanner in = new Scanner(System.in);
-		System.out.println("Enter the number you would like to run.");
-		System.out.println("1 - easy problem\n2 - medium problem\n3 - hard problem\n4 - enter new problem");
+		System.out.println("Enter the file name that contains the initial board state.");
+		//System.out.println("1 - easy problem\n2 - medium problem\n3 - hard problem\n4 - enter new problem");
 		String response = in.nextLine();
-		int problem = Integer.parseInt(response);
-		String selection = null;
+		init = readFile(response);
+		player = determinePlayer();
+		//init.add("0 1");
+		//init.add("1 2");
 		
-		switch(problem){
-		case 1:
-			puzzle = easy;
-			selection = EASY;
-			break;
-		case 2:
-			puzzle = medium;
-			selection = MEDIUM;
-			break;
-		case 3: 
-			puzzle = hard;
-			selection = HARD;
-			break;
-		case 4:
-			selection = CUSTOM;
-			System.out.println("Please enter puzzle separated by spaces (e.g. 1 2 3 5 4 6 7 8 0");
-			String puzzleString = in.nextLine();
-			puzzle = new EightPuzzle(puzzleString);
-		}
+		//create a new DanceBattle with 3 moves and 2 moves taken
+		Puzzle p = new DanceBattle(Run.numOfMoves, Run.numOfMovesTaken, player, init);
 		
-		System.out.println("Select the search method.");
-		System.out.println("1 - breath first search\n2 - depth firsth search"
-				+"\n3 - iterative deepening\n4 - Greedy Best First Search"
-				+"\n5 - A* Number of tiles incorrect\n6 - A* Manhattan Distance");
-		int searchMethod  = Integer.parseInt(in.nextLine());
-		int depthLimit = -1;
-		String searchSelection = null;
-		//comparator that uses f(n) = g(n) + h(n) to order the priority queue
-		Comparator<Node> cmp = new Comparator<Node>(){
-			@Override
-			public int compare(Node o1, Node o2) {
-				int fo1 = (int)(o1.getPathCost() + o1.getHueristic());
-				int fo2 = (int) (o2.getPathCost() + o2.getHueristic());
-				int f = fo1 - fo2; 
-				return f;
-			}			
-		};
-		
-		switch(searchMethod){
-		case 1:
-			searchSelection = "BFS";
-			solution = Run.searchBFS(puzzle, goal2);
-			 break;
-		case 2:
-			searchSelection = "DFS";
-			solution = Run.searchDFS(puzzle, goal2);
-			 break;		
-		}
-		
-		Run.printResults(searchSelection + "-" + selection
-				+ ((depthLimit >= 0)? " - Depth Limit is " + depthLimit : " - Depth Limit is not applicable")
-				, puzzle, (Puzzle)goal2, solution);
-		
+		//init.add("0 1");
+		//init.add("1 1");
+		//Puzzle p = new DanceBattle(2, 2, Player.MIN, init);
+		Node<Puzzle> n = new Node<>(p);
+		//Node<Puzzle> n = new Node<>(p, null, null, 1.0);
+		Search<Puzzle> search = new MinMaxSearch();
+		Node<Puzzle> node = search.search(n);
+		Puzzle finalState = node.getState();
+		List<Action> danceSequence = finalState.moveSequence();
+		printHeader();
+		printMoves(danceSequence);
+		System.out.println("You " + finalState.getGameStatus());
+		//Run.printResults();		
 		System.out.println("\n\nWould you like to run another puzzle? Enter y or n:");
 		boolean continue1 = Run.checkValue(in.nextLine());
 		//in.close();
-		return continue1;
-		
+		return continue1;		
+	}
+	
+	/*
+	 * Read the file.
+	 * 
+	 * @param fileName name of the file to read
+	 */
+	public static List<String> readFile(String fileName){
+		Path file = Paths.get(fileName);
+		//Path temp = Paths.get("");
+		//System.out.println(temp.toAbsolutePath().toString());
+		List<String> list = new ArrayList<>();
+		Charset charset = Charset.forName("US-ASCII");
+		try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+		    String line = null;
+		    int count = 0;
+		    while ((line = reader.readLine()) != null) {
+		        count++;
+		        switch(count){
+		        case 1:
+		        	Run.numOfMoves = Integer.parseInt(line);
+		        	break;
+		        case 2:
+		        	Run.numOfMovesTaken = Integer.parseInt(line);
+		        	break;
+		        default:
+		        	list.add(line);
+		        }		    	
+		    }		    
+		} catch (IOException x) {
+		    System.err.format("IOException: %s%n", x);
+		}
+		return list;
+	}
+	
+	/*
+	 * 
+	 * @return Player the last player to move.
+	 */
+	public static Player determinePlayer(){
+		if(init.size() % 2 == 0){
+			return Player.MIN;
+		} else {
+			return Player.MAX;
+		}
+	}
+	
+	/*
+	 * Print the game header.
+	 */
+	public static void printHeader(){
+		System.out.println("##############Dance Battle##############");
+		System.out.println("Number of Moves: " + Run.numOfMoves);
+		System.out.println("Number of Moves Taken: " + Run.numOfMovesTaken);
+		System.out.println("Last Player to Move: " + player);
+		System.out.println("Initial board state:");
+		for(String move : init){
+			System.out.println(move);
+		}		
+	}
+	
+	/*
+	 * Print the dance sequence.
+	 * 
+	 * @param actions list of actions for the game.
+	 */
+	public static void printMoves(List<Action> actions){
+		System.out.println("############Dance Sequence###########");
+		for( Action a : actions){
+			System.out.println(a);
+		}
 	}
 	
 	public static boolean checkValue(String result){
@@ -123,7 +160,7 @@ public class Run {
 	 * @return solution
 	 */
 	// @SuppressWarnings("unchecked")
-	public static List<Node> searchBFS(Puzzle puzzle, GoalTest<Puzzle> goal) {
+	/*public static List<Node> search(Puzzle puzzle, GoalTest<Puzzle> goal) {
 		Problem<Puzzle> problem = new Problem<>(puzzle,
 				new ActionFunctionImpl(), new ResultFunctionImpl(), goal);
 		Search<Node, Puzzle> search = new BFS();
@@ -134,7 +171,7 @@ public class Run {
 			log.debug("Solution cannot be found.");
 		}
 		return solution;
-	}
+	}*/
 
 	
 	

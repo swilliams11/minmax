@@ -8,11 +8,11 @@ package com.sw.search.framework;
  * @author Ravi Mohan
  * @author Mike Stampone
  */
-public interface GoalTest<T> {
+public interface GoalTest {
 	/**
 	 * Returns <code>true</code> if the given state is a goal state.
 	 * 
 	 * @return <code>true</code> if the given state is a goal state.
 	 */
-	boolean isGoalState(T state);
+	boolean isGoalState();
 }
