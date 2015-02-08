@@ -20,19 +20,25 @@ public class MinMaxSearch implements Search<Puzzle> {
 
 	private Node<Puzzle> finalMaxNode;
 	private GameStatus status;
-	private HeuristicFunction<Node<Puzzle>> hf = new MinMaxHeuristic();
+	private HeuristicFunction<Node<Puzzle>> hf;
 	private Comparator<Node> maxCmp, minCmp;
 	private final int ply;
 	private int previousDepth;
 	private int currentDepth;
 	private boolean goalStateReached = false;
-	
+		
+	public MinMaxSearch(Comparator<Node> maxCmp, Comparator<Node> minCmp
+			, int ply, HeuristicFunction<Node<Puzzle>> hf){
+		this(maxCmp, minCmp, ply);
+		this.hf = hf;
+	}
 	
 	public MinMaxSearch(Comparator<Node> maxCmp, Comparator<Node> minCmp, int ply){
 		//this(maxCmp, minCmp);
 		this.maxCmp = maxCmp;
 		this.minCmp = minCmp;
 		this.ply = ply;
+		hf = new MinMaxHeuristic();
 	}
 	
 	public MinMaxSearch(Comparator<Node> maxCmp, Comparator<Node> minCmp){
@@ -43,6 +49,7 @@ public class MinMaxSearch implements Search<Puzzle> {
 	
 	public MinMaxSearch(){
 		ply = 2;
+		hf = new MinMaxHeuristic();
 	}
 	
 	public Node<Puzzle> search(Node<Puzzle> n){
@@ -69,7 +76,6 @@ public class MinMaxSearch implements Search<Puzzle> {
 		Node<Puzzle> maxNode = null;
 		Queue<Node<Puzzle>> frontier = new PriorityQueue<>(20, maxCmp);
 		previousDepth = n.getDepth();
-		
 		
 		//add to the priority queue
 		for(Action a : actions){
@@ -118,7 +124,7 @@ public class MinMaxSearch implements Search<Puzzle> {
 			return runGoalProcess(n); 
 		}
 		
-		int max = Integer.MIN_VALUE;
+		int min = Integer.MAX_VALUE;
 		Set<Action> actions = p.actions();
 		Queue<Node<Puzzle>> frontier = new PriorityQueue<>(20, maxCmp);
 		
@@ -133,9 +139,9 @@ public class MinMaxSearch implements Search<Puzzle> {
 		while(!frontier.isEmpty()){
 			Node<Puzzle> nSuccessor = frontier.poll(); //removes higher priority node
 			if(isPlyLimit(previousDepth, nSuccessor.getDepth())){
-				max = Math.max(max, hf.heuristic(nSuccessor));
+				min = Math.min(min, hf.heuristic(nSuccessor));
 			} else {
-				max = Math.max(max, maxValue(nSuccessor));
+				min = Math.min(min, maxValue(nSuccessor));
 			}
 		}
 		
@@ -144,7 +150,7 @@ public class MinMaxSearch implements Search<Puzzle> {
 			Node<Puzzle> nSuccessor = new Node<Puzzle>(puzzleSuccessor, n, a, 1.0);
 			max = Math.max(max, maxValue(nSuccessor));
 		}*/
-		return max;
+		return min;
 	}
 	
 	/*
@@ -161,7 +167,7 @@ public class MinMaxSearch implements Search<Puzzle> {
 			return runGoalProcess(n);
 		}
 		
-		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
 		//Node<Puzzle> minNode = null;
 		Set<Action> actions = p.actions();
 		Queue<Node<Puzzle>> frontier = new PriorityQueue<>(20, minCmp);
@@ -177,9 +183,9 @@ public class MinMaxSearch implements Search<Puzzle> {
 		while(!frontier.isEmpty()){
 			Node<Puzzle> nSuccessor = frontier.poll(); //removes higher priority node
 			if(isPlyLimit(previousDepth, nSuccessor.getDepth())){
-				min = Math.min(min, hf.heuristic(nSuccessor));
+				max = Math.max(max, hf.heuristic(nSuccessor));
 			} else {
-				min = Math.min(min, minValue(nSuccessor));
+				max = Math.max(max, minValue(nSuccessor));
 			}
 		}
 				
@@ -188,7 +194,7 @@ public class MinMaxSearch implements Search<Puzzle> {
 			Node<Puzzle> nSuccessor = new Node<Puzzle>(puzzleSuccessor, n, a, 1.0);
 			min = Math.min(min, minValue(nSuccessor));
 		}*/
-		return min;
+		return max;
 	}
 	
 	/*

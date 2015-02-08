@@ -46,17 +46,19 @@ public class Run {
 	public static boolean run(){
 		Scanner in = new Scanner(System.in);
 		System.out.println("Enter the file name that contains the initial board state.");
+		System.out.println("e.g. testcase1.txt\n");
+		
 		//System.out.println("1 - easy problem\n2 - medium problem\n3 - hard problem\n4 - enter new problem");
 		String response = in.nextLine();
 		init = readFile(response);
 		player = determinePlayer();		
-		//create a new DanceBattle with 3 moves and 2 moves taken
-		Puzzle p = new DanceBattle(Run.numOfMoves, Run.numOfMovesTaken, player, init);
 		
-		//init.add("0 1");
-		//init.add("1 1");
-		//Puzzle p = new DanceBattle(2, 2, Player.MIN, init);
+		Puzzle p = null;
+			
+		p = new DanceBattle(Run.numOfMoves, Run.numOfMovesTaken, player, init);
+		
 		Node<Puzzle> n = new Node<>(p);
+		//Create the min and max comparators
 		Comparator<Node> maxCmp = new Comparator<Node>(){
 			@Override
 			public int compare(Node o1, Node o2) {
@@ -71,15 +73,17 @@ public class Run {
 			}			
 		};
 		
-		//default ply of 2
-		//Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp);
-		
-		//default ply of 2
-		Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp,4);
-				
-		//fails to finish running
-		//Search<Puzzle> search = new MinMaxSearch(maxCmp,minCmp, -1);
-		
+		System.out.println("Enter ply level [e.g. a number from 1 to 5:");
+		response = in.nextLine();
+		Search<Puzzle> search = null;
+		if(validResponse(response)){
+			//default minMaxHeuristic
+			search = new MinMaxSearch(maxCmp,minCmp,Integer.parseInt(response));
+		} else {
+			System.out.println("Invalid entry. A default ply of 2 was used.");
+		//	default ply of 2, default MinMaxHeuristic
+			search = new MinMaxSearch(maxCmp,minCmp,2);
+		}		
 		
 		Node<Puzzle> node = search.search(n);
 		Puzzle finalState = node.getState();
@@ -137,6 +141,14 @@ public class Run {
 		} else {
 			return Player.MAX;
 		}
+	}
+	
+	public static boolean validResponse(String response){
+		int value = Integer.parseInt(response);
+		if (value > 1 && value <= 5){
+			return true;
+		}
+		return false;
 	}
 	
 	/*
