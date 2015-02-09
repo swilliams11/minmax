@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import aima.core.search.framework.Metrics;
 
 import com.sw.game.Puzzle;
+import com.sw.search.AlphaBetaSearch;
 import com.sw.search.MinMaxSearch;
 import com.sw.search.Node;
 import com.sw.search.Search;
@@ -73,17 +74,29 @@ public class Run {
 			}			
 		};
 		
-		System.out.println("Enter ply level [e.g. a number from 1 to 5:");
+		System.out.println("Enter ply level [e.g. a number from 1 to 10:");
 		response = in.nextLine();
+		System.out.println("Enter search algorithm [1 = Min Max; 2 = Min Max Alpha Beta]:");
+		String alg = in.nextLine();
+		
 		Search<Puzzle> search = null;
+		//select the ply level
+		int ply = 0;
 		if(validResponse(response)){
-			//default minMaxHeuristic
-			search = new MinMaxSearch(maxCmp,minCmp,Integer.parseInt(response));
+			ply = Integer.parseInt(response);
 		} else {
-			System.out.println("Invalid entry. A default ply of 2 was used.");
-		//	default ply of 2, default MinMaxHeuristic
-			search = new MinMaxSearch(maxCmp,minCmp,2);
-		}		
+			ply = 2;
+		}	
+		
+		//select the the algorithm 
+		switch (Integer.parseInt(alg)){
+		case 1:
+			search = new MinMaxSearch(maxCmp,minCmp,ply);
+			break;
+		case 2:
+			search = new AlphaBetaSearch(maxCmp,minCmp,ply);
+		}
+				
 		
 		Node<Puzzle> node = search.search(n);
 		Puzzle finalState = node.getState();
@@ -145,7 +158,7 @@ public class Run {
 	
 	public static boolean validResponse(String response){
 		int value = Integer.parseInt(response);
-		if (value > 1 && value <= 5){
+		if (value > 1 && value <= 10){
 			return true;
 		}
 		return false;
