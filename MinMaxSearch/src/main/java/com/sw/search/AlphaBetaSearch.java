@@ -7,7 +7,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-import aima.core.search.framework.Metrics;
+import com.sw.search.framework.Metrics;
 
 import com.sw.game.Action;
 import com.sw.game.GameStatus;
@@ -27,9 +27,9 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 	private int currentDepth;
 	private boolean goalStateReached = false;
 	//value of the best (highest value) choice we found along path for max
-	private int alpha = Integer.MIN_VALUE;
+	//private int alpha = Integer.MIN_VALUE;
 	//value of the best (lowest value) choice we found along path for min
-	private int beta = Integer.MAX_VALUE;
+	//private int beta = Integer.MAX_VALUE;
 	
 	public AlphaBetaSearch(Comparator<Node> maxCmp, Comparator<Node> minCmp
 			, int ply, HeuristicFunction<Node<Puzzle>> hf){
@@ -91,7 +91,8 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 		
 		while(!frontier.isEmpty()){
 			Node<Puzzle> nSuccessor = frontier.poll(); //removes higher priority node
-			int utilityValue = minValue(nSuccessor);
+			//int utilityValue = minValue(nSuccessor);
+			int utilityValue = maxValue(nSuccessor, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			
 			if(utilityValue > max){
 				max = utilityValue;
@@ -113,7 +114,7 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 	 * 
 	 * @return utility value
 	 */
-	public int minValue(Node<Puzzle> n){
+	public int minValue(Node<Puzzle> n, int alpha, int beta){
 		Puzzle p = n.getState();
 		if(p.isGoalState()){
 			goalStateReached = true;
@@ -137,12 +138,11 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 			if(isPlyLimit(previousDepth, nSuccessor.getDepth())){
 				min = Math.min(min, hf.heuristic(nSuccessor));
 			} else {
-				min = Math.min(min, maxValue(nSuccessor));
-				if(min < alpha)	return min;
+				min = Math.min(min, maxValue(nSuccessor, alpha, beta));
+				if(min <= alpha)	return min;
 				beta = Math.min(beta, min);
 			}
-		}
-		
+		}		
 		return min;
 	}
 	
@@ -153,7 +153,7 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 	 * 
 	 * @return utility value
 	 */
-	public int maxValue(Node<Puzzle> n){
+	public int maxValue(Node<Puzzle> n, int alpha, int beta){
 		Puzzle p = n.getState();
 		if(p.isGoalState()){
 			goalStateReached = true;
@@ -178,7 +178,7 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 			if(isPlyLimit(previousDepth, nSuccessor.getDepth())){
 				max = Math.max(max, hf.heuristic(nSuccessor));
 			} else {
-				max = Math.max(max, minValue(nSuccessor));
+				max = Math.max(max, minValue(nSuccessor, alpha, beta));
 				if(max >= beta)	return max;
 				alpha = Math.max(alpha, max);
 			}

@@ -7,7 +7,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-import aima.core.search.framework.Metrics;
+import com.sw.search.framework.Metrics;
 
 import com.sw.game.Action;
 import com.sw.game.GameStatus;

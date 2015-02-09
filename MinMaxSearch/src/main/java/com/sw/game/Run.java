@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 import org.apache.log4j.Logger;
 
-import aima.core.search.framework.Metrics;
+import com.sw.search.framework.Metrics;
 
 import com.sw.game.Puzzle;
 import com.sw.search.AlphaBetaSearch;

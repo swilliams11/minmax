@@ -6,12 +6,12 @@
   <name>MinMaxSearch</name>
   <description>min max search algorithm</description>
   <dependencies>
-  <dependency>
+  <!--  <dependency>
       <groupId>com.googlecode.aima-java</groupId>
       <artifactId>aima-core</artifactId>
       <version>0.11.0</version>
       <scope>compile</scope>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>

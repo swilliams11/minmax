@@ -1,7 +1,7 @@
 package com.sw.search;
 
 import java.util.List;
-import aima.core.search.framework.Metrics;
+import com.sw.search.framework.Metrics;
 import com.sw.game.Action;
 
 public interface Search<T> {
