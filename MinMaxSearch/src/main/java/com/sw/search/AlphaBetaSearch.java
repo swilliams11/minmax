@@ -27,9 +27,9 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 	private int currentDepth;
 	private boolean goalStateReached = false;
 	//value of the best (highest value) choice we found along path for max
-	//private int alpha = Integer.MIN_VALUE;
+	private int alpha = Integer.MIN_VALUE;
 	//value of the best (lowest value) choice we found along path for min
-	//private int beta = Integer.MAX_VALUE;
+	private int beta = Integer.MAX_VALUE;
 	
 	public AlphaBetaSearch(Comparator<Node> maxCmp, Comparator<Node> minCmp
 			, int ply, HeuristicFunction<Node<Puzzle>> hf){
@@ -92,7 +92,8 @@ public class AlphaBetaSearch implements Search<Puzzle> {
 		while(!frontier.isEmpty()){
 			Node<Puzzle> nSuccessor = frontier.poll(); //removes higher priority node
 			//int utilityValue = minValue(nSuccessor);
-			int utilityValue = maxValue(nSuccessor, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			//int utilityValue = maxValue(nSuccessor, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			int utilityValue = maxValue(nSuccessor, alpha, beta);
 			
 			if(utilityValue > max){
 				max = utilityValue;
